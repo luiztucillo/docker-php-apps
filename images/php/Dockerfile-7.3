@@ -1,0 +1,59 @@
+FROM phpdockerio/php73-fpm:latest
+
+ARG app_path
+ENV APP_PATH=$app_path
+
+ARG username
+ENV USERNAME=$username
+
+# Fix debconf warnings upon build
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Install selected extensions and other stuff
+RUN apt-get update \
+    && apt-get -y --no-install-recommends install golang-go git php-memcached php7.3-mysql php-redis php-xdebug php7.3-bcmath php7.3-gd \
+    && apt-get clean; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+
+# Configure
+COPY conf/php.ini /etc/php/7.3/fpm/
+COPY conf/php.ini /etc/php/7.3/cli/
+COPY conf/php-fpm.conf /etc/php/7.3/fpm/
+
+RUN echo "user = $USERNAME" >> /etc/php/7.3/fpm/php-fpm.conf \
+    && echo "group = $USERNAME" >> /etc/php/7.3/fpm/php-fpm.conf
+
+##COMPOSER
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
+    && php composer-setup.php \
+    && php -r "unlink('composer-setup.php');" \
+    && mv composer.phar /usr/bin/composer
+
+### Install sendmail for use with mailhog
+ENV GOPATH /tmp
+RUN cd /tmp \
+    && go get github.com/mailhog/mhsendmail \
+    && cd /tmp/src/github.com/mailhog/mhsendmail/ \
+    && go build \
+    && cp /tmp/src/github.com/mailhog/mhsendmail/mhsendmail /usr/local/bin
+
+#N98
+RUN php -r "copy('https://files.magerun.net/n98-magerun.phar', 'n98-magerun.phar');" \
+    && mv n98-magerun.phar /usr/bin/n98 \
+    && chmod +x /usr/bin/n98
+
+#set folder owner for composer cache
+RUN mkdir -p $APP_PATH \
+    && useradd -m $USERNAME \
+    && chown -R $USERNAME:$USERNAME $APP_PATH
+
+#Install and configure PHPCS
+USER $USERNAME
+RUN composer global require zifius/magizendo
+USER root
+RUN ln -s /home/$USERNAME/.composer/vendor/bin/phpcs /usr/local/bin
+USER $USERNAME
+RUN phpcs --config-set installed_paths /home/$USERNAME/.composer/vendor/zifius/magizendo/
+
+# Make sure the volume mount point is empty
+RUN rm -rf /var/www/html/*
+WORKDIR $APP_PATH
