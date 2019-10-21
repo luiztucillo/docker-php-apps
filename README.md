@@ -13,16 +13,16 @@ You need to set all environment variables to use these contianers:
 - **REDISMIN_KEY** is the key provided by redismin to connect to GUI. See more below;
 
 You can have multiple env files for multiple applications, defining where the one to use when starting docker compose. Ex.:  
-_docker-compose up -d --env-file .wordpress.env_
-_docker-compose up -d --env-file .magento.env_
+_docker-compose up -d --env-file wordpress.env_
+_docker-compose up -d --env-file magento.env_
 
 Or you can override some environment var directly. Ex.:  
 _docker-compose up -d -e APPLICATION=magento -e PHP_VERSION=5.6_
 
-###CONFIG
+### CONFIG
 Inside containers, database host is **always** _mysql_.
 
-###REDISMIN
+### REDISMIN
 [Redismin](https://www.redsmin.com/) is a web GUI for Redis. See more in 
 
 ### Setting local domain
