@@ -12,9 +12,8 @@ You need to set all environment variables to use these contianers:
 - **DB_PASSWORD** is the password for the above user for DB;
 - **REDISMIN_KEY** is the key provided by redismin to connect to GUI. See more below;
 
-You can have multiple env files for multiple applications, defining where the one to use when starting docker compose. Ex.:  
-_docker-compose up -d --env-file wordpress.env_
-_docker-compose up -d --env-file magento.env_
+The .env file is the sample. We have a sample for magento _(.env.magento.sample)_ and one for wordpress _(.env.wordpress.sample)_
+The default one _(.env)_ is a copy from wordpress. So you can override it with than get back to its original.  
 
 Or you can override some environment var directly. Ex.:  
 _docker-compose up -d -e APPLICATION=magento -e PHP_VERSION=5.6_
