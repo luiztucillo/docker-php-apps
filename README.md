@@ -1,4 +1,4 @@
-# Nginx Latest + PHP + MySql 5.7 + MailHog + Redis with Redismin + PHPCS
+# Nginx Latest + PHP (5.6, 7.3) + MySql 5.7 + MailHog + Redis with Redismin + PHPCS
 You need to set all environment variables to use these contianers:  
 - **APPLICATION** should be _wordpress_ or _magento_;
 - **PHP_VERSION** should be _5.6_ or _7.3_;
@@ -43,4 +43,5 @@ This plugin also installs N98. You can run it from anywhere with the command _n9
 
 ## SSL
 ### Generate certificates
-Use este https://kifarunix.com/how-to-create-self-signed-ssl-certificate-with-mkcert-on-ubuntu-18-04/ para criar e confiar em um certificado auto-assinado. 
+Use este https://kifarunix.com/how-to-create-self-signed-ssl-certificate-with-mkcert-on-ubuntu-18-04/ para criar e confiar em um certificado auto-assinado.
+ 
