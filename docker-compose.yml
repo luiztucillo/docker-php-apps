@@ -15,7 +15,7 @@ services:
       - php
     volumes:
       - ${HOST_APP_PATH}:${APP_PATH}:delegated
-      - ${HOST_APP_PATH}/var/log/nginx:/var/log/nginx
+      - ./data/log/${APPLICATION}/nginx:/var/log/nginx
       - ./images/nginx/conf/ssl/:/etc/nginx/ssl/
       - ./images/nginx/conf/conf.d/default.conf:/etc/nginx/conf.d/default.conf
       - ./images/nginx/conf/applications/${APPLICATION}.conf:/etc/nginx/application.conf
@@ -39,7 +39,7 @@ services:
     volumes:
       - ${HOST_APP_PATH}:${APP_PATH}:delegated
       - /private:/private #/tmp dir for mac
-      - /tmp:/tmp
+      - ./data/log/${APPLICATION}/php-fpm:/var/log/php-fpm
     networks:
       - mynetwork
 
