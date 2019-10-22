@@ -59,6 +59,12 @@ RUN ln -s /home/$USERNAME/.composer/vendor/bin/phpcs /usr/local/bin
 USER $USERNAME
 RUN phpcs --config-set installed_paths /home/$USERNAME/.composer/vendor/zifius/magizendo/
 
+#Enable xdebug auto start after running all composer statemets
+USER root
+RUN echo xdebug.remote_autostart=1 >> /etc/php/7.3/fpm/php.ini
+RUN echo xdebug.remote_autostart=1 >> /etc/php/7.3/cli/php.ini
+USER $USERNAME
+
 # Make sure the volume mount point is empty
 RUN rm -rf /var/www/html/*
 WORKDIR $APP_PATH
