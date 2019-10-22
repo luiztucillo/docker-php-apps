@@ -14,8 +14,8 @@ You need to set all environment variables to use these contianers:
 
 The .env file is the sample. We have a sample for magento _(.env.magento.sample)_ and one for wordpress _(.env.wordpress.sample)_
 The default one _(.env)_ is a copy from wordpress. So you can override it with than get back to its original. Ex.:
-To run __wordpress__ execute: _cp .env.wordpress.sample .env && docker-compose up -d --build_  
-To run __magento__ execute: _cp .env.magento.sample .env && docker-compose up -d --build_  
+To run __wordpress__ execute: _cp env-templates/wordpress.env ../.env && docker-compose up -d --build_  
+To run __magento__ execute: _cp env-templates/magento.env .env && docker-compose up -d --build_  
 
 Or you can override some environment var directly. Ex.:  
 _docker-compose up -d -e APPLICATION=magento -e PHP_VERSION=5.6_
