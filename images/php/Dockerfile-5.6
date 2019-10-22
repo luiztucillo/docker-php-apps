@@ -19,6 +19,11 @@ COPY conf/php.ini /etc/php5/fpm/
 COPY conf/php.ini /etc/php5/cli/
 COPY conf/php-fpm.conf /etc/php5/fpm/
 
+#set folder owner for composer cache
+RUN mkdir -p $APP_PATH \
+    && useradd -m $USERNAME \
+    && chown -R $USERNAME:$USERNAME $APP_PATH
+
 RUN echo "user = $USERNAME" >> /etc/php5/fpm/php-fpm.conf \
     && echo "group = $USERNAME" >> /etc/php5/fpm/php-fpm.conf
 
@@ -27,6 +32,11 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && php composer-setup.php \
     && php -r "unlink('composer-setup.php');" \
     && mv composer.phar /usr/bin/composer
+
+# It's a lib to paralelise composer downloads
+USER $USERNAME
+RUN composer global require "hirak/prestissimo:^0.3"
+USER root
 
 ### Install sendmail for use with mailhog
 ENV GOPATH /tmp
@@ -40,11 +50,6 @@ RUN cd /tmp \
 RUN php -r "copy('https://files.magerun.net/n98-magerun.phar', 'n98-magerun.phar');" \
     && mv n98-magerun.phar /usr/bin/n98 \
     && chmod +x /usr/bin/n98
-
-#set folder owner for composer cache
-RUN mkdir -p $APP_PATH \
-    && useradd -m $USERNAME \
-    && chown -R $USERNAME:$USERNAME $APP_PATH
 
 #Install and configure PHPCS
 USER $USERNAME
