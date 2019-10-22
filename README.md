@@ -38,5 +38,9 @@ To configure in PHPSTORM:
 - Click on __"..."__ icon
 - Set __"PHP Code Sniffer Path"__ to the file __"phpcs.sh"__ inside docker folder then click __"Validate"__
 
-###N98
+### N98
 This plugin also installs N98. You can run it from anywhere with the command _n98_
+
+## SSL
+### Generate certificates
+Use este https://kifarunix.com/how-to-create-self-signed-ssl-certificate-with-mkcert-on-ubuntu-18-04/ para criar e confiar em um certificado auto-assinado. 
