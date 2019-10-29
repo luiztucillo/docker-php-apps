@@ -40,10 +40,7 @@ RUN cd /tmp \
     && cp /tmp/src/github.com/mailhog/mhsendmail/mhsendmail /usr/local/bin
 
 ##COMPOSER
-USER root
-COPY --from=composer:latest /usr/bin/composer $GLOBAL_PATH/composer
-RUN chown $USERNAME:$USERNAME $GLOBAL_PATH/composer \
-    && chmod +x $GLOBAL_PATH/composer
+# Base image already have composer
 
 #Install and configure N98
 RUN curl https://files.magerun.net/n98-magerun.phar -o $GLOBAL_PATH/n98 \
@@ -59,7 +56,7 @@ RUN curl -L https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar -o $GLOBAL_PA
 RUN curl -L $PHPUNIT_URL -o $GLOBAL_PATH/phpunit.phar \
     && chown $USERNAME:$USERNAME $GLOBAL_PATH/phpunit.phar \
     && chmod +x $GLOBAL_PATH/phpunit.phar \
-    && ln -s $GLOBAL_PATH/phpunit.phar $GLOBAL_PATH/phpunit
+    && ln -sf $GLOBAL_PATH/phpunit.phar $GLOBAL_PATH/phpunit
 
 # Make sure the volume mount point is empty
 USER $USERNAME
