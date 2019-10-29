@@ -58,6 +58,11 @@ RUN curl -L $PHPUNIT_URL -o $GLOBAL_PATH/phpunit.phar \
     && chmod +x $GLOBAL_PATH/phpunit.phar \
     && ln -sf $GLOBAL_PATH/phpunit.phar $GLOBAL_PATH/phpunit
 
+#Install WPCli
+RUN curl -L https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o $GLOBAL_PATH/wp \
+    && chown $USERNAME:$USERNAME $GLOBAL_PATH/wp \
+    && chmod +x $GLOBAL_PATH/wp
+
 # Make sure the volume mount point is empty
 USER $USERNAME
 RUN rm -rf /var/www/html/*
