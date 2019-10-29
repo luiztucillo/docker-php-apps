@@ -5,9 +5,6 @@ ENV PACKAGES="golang-go git php-memcached php7.3-mysql php-redis php-xdebug php7
 ENV PHPUNIT_URL="https://phar.phpunit.de/phpunit-8.phar"
 ENV GLOBAL_PATH=/usr/local/bin
 
-ARG app_path
-ENV APP_PATH=$app_path
-
 ARG username
 ENV USERNAME=$username
 
@@ -21,12 +18,12 @@ RUN apt-get update \
 
 # Configure
 COPY conf/php.ini $PHP_CONFIG_PATH/fpm/
-COPY conf/php.ini $PHP_CONFIG_PATH//cli/
+COPY conf/php.ini $PHP_CONFIG_PATH/cli/
 COPY conf/php-fpm.conf $PHP_CONFIG_PATH//fpm/
 
-RUN mkdir -p $APP_PATH \
+RUN mkdir -p /var/www/html \
     && useradd -m $USERNAME \
-    && chown -R $USERNAME:$USERNAME $APP_PATH
+    && chown -R $USERNAME:$USERNAME /var/www/html
 
 RUN echo "user = $USERNAME" >> $PHP_CONFIG_PATH/fpm/php-fpm.conf \
     && echo "group = $USERNAME" >> $PHP_CONFIG_PATH/fpm/php-fpm.conf
@@ -66,4 +63,4 @@ RUN curl -L https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
 # Make sure the volume mount point is empty
 USER $USERNAME
 RUN rm -rf /var/www/html/*
-WORKDIR $APP_PATH
+WORKDIR /var/www/html

@@ -1,12 +1,11 @@
 # Nginx Latest + PHP (5.6, 7.3) + MySql 5.7 + MailHog + Redis with Redismin + PHPCS
 You need to set all environment variables to use these contianers:  
-- **APPLICATION** should be _wordpress_ or _magento_;
+- **APPLICATION** should be _wordpress_ or _magento_. Load pre-defined nginx config files;
 - **PHP_VERSION** should be _5.6_ or _7.3_;
 - **DOMAIN** should be your local domain;
 - **USERNAME** is your local username to use in nginx and php-fpm for file permissions; 
-- **APP_PATH** is the path of app in container. Usually is _/var/www/html_;
 - **HOST_APP_PATH** is the path of app in your machine. Usually is _../_ to place docker folder inside the project folder;
-- **DB_LOCAL_VOLUME** is the path to save DB volume. It's useful to persist database data;
+- **DOCKER_DATA_FOLDER** is the path to save persistent docker data;
 - **DB_NAME** is the default schema name for this application. It's created when the database container is created;
 - **DB_USER** is the user for the DB;
 - **DB_PASSWORD** is the password for the above user for DB;
