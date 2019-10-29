@@ -38,6 +38,7 @@ services:
       - ${HOST_APP_PATH}:/var/www/html:delegated
       - /private:/private #/tmp dir for mac
       - ./data/log:/var/log/php-fpm
+      - ./data/log/xdebug:/var/log/xdebug
     networks:
       - mynetwork
 
