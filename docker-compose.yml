@@ -51,7 +51,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - ${DB_LOCAL_VOLUME}:/var/lib/mysql
+      - ${DOCKER_DATA_FOLDER}/mysql57:/var/lib/mysql
     networks:
       - mynetwork
 
