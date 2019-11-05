@@ -43,4 +43,9 @@ This plugin also installs N98. You can run it from anywhere with the command _n9
 ## SSL
 ### Generate certificates
 Use este https://kifarunix.com/how-to-create-self-signed-ssl-certificate-with-mkcert-on-ubuntu-18-04/ para criar e confiar em um certificado auto-assinado.
- 
+
+## HELPERS
+There are some helper scripts in ./helpers. These scripts uses .env vars.
+- ./helpers/magento2
+  - download.sh: download magento from composer to /var/www/html from container;
+  - install.sh: install magento using brazilian config and some pre-defined options. Need to have used download.sh or manually downloaded magento 2;

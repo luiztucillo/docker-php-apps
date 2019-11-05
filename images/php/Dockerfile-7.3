@@ -1,7 +1,7 @@
 FROM phpdockerio/php73-fpm:latest
 
 ENV PHP_CONFIG_PATH=/etc/php/7.3
-ENV PACKAGES="golang-go git php-memcached php7.3-mysql php-redis php-xdebug php7.3-bcmath php7.3-gd"
+ENV PACKAGES="golang-go git php-memcached php7.3-mysql php7.3-intl php-redis php-xdebug php7.3-bcmath php7.3-gd php7.3-soap"
 ENV PHPUNIT_URL="https://phar.phpunit.de/phpunit-8.phar"
 ENV GLOBAL_PATH=/usr/local/bin
 
@@ -19,7 +19,7 @@ RUN apt-get update \
 # Configure
 COPY conf/php.ini $PHP_CONFIG_PATH/fpm/
 COPY conf/php.ini $PHP_CONFIG_PATH/cli/
-COPY conf/php-fpm.conf $PHP_CONFIG_PATH//fpm/
+COPY conf/php-fpm.conf $PHP_CONFIG_PATH/fpm/
 
 RUN mkdir -p /var/www/html \
     && useradd -m $USERNAME \
@@ -39,11 +39,6 @@ RUN cd /tmp \
 ##COMPOSER
 # Base image already have composer
 
-#Install and configure N98
-RUN curl https://files.magerun.net/n98-magerun.phar -o $GLOBAL_PATH/n98 \
-    && chown $USERNAME:$USERNAME $GLOBAL_PATH/n98 \
-    && chmod +x $GLOBAL_PATH/n98
-
 #Install and configure PHPCS
 RUN curl -L https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar -o $GLOBAL_PATH/phpcs \
     && chown $USERNAME:$USERNAME $GLOBAL_PATH/phpcs \
@@ -54,11 +49,6 @@ RUN curl -L $PHPUNIT_URL -o $GLOBAL_PATH/phpunit.phar \
     && chown $USERNAME:$USERNAME $GLOBAL_PATH/phpunit.phar \
     && chmod +x $GLOBAL_PATH/phpunit.phar \
     && ln -sf $GLOBAL_PATH/phpunit.phar $GLOBAL_PATH/phpunit
-
-#Install WPCli
-RUN curl -L https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o $GLOBAL_PATH/wp \
-    && chown $USERNAME:$USERNAME $GLOBAL_PATH/wp \
-    && chmod +x $GLOBAL_PATH/wp
 
 # Make sure the volume mount point is empty
 USER $USERNAME
