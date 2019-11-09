@@ -37,6 +37,7 @@ services:
     volumes:
       - ${HOST_APP_PATH}:/var/www/html:delegated
       - /private:/private #/tmp dir for mac
+      - /tmp:/tmp
       - ./data/log:/var/log/php-fpm
       - ./data/log/xdebug:/var/log/xdebug
       - ./data/composer:/home/${USERNAME}/.composer
