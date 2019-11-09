@@ -11,8 +11,7 @@ You need to set all environment variables to use these contianers:
 - **DB_PASSWORD** is the password for the above user for DB;
 - **REDISMIN_KEY** is the key provided by redismin to connect to GUI. See more below;
 
-The .env file is the sample. We have a sample for magento _(.env.magento.sample)_ and one for wordpress _(.env.wordpress.sample)_
-The default one _(.env)_ is a copy from wordpress. So you can override it with than get back to its original. Ex.:
+Create .env file in docker root using templates from _env-templates_ folder. So you can override it with than get back to its original. Ex.:
 To run __wordpress__ execute: _cp env-templates/wordpress.env ../.env && docker-compose up -d --build_  
 To run __magento__ execute: _cp env-templates/magento.env .env && docker-compose up -d --build_  
 
