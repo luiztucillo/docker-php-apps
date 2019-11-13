@@ -1,7 +1,7 @@
 FROM phpdockerio/php56-fpm:latest
 
 ENV PHP_CONFIG_PATH=/etc/php5
-ENV PACKAGES="golang-go git php5-memcached php5-intl php5-mysql php5-redis php5-gd php5-memcache php5-xdebug php5-soap"
+ENV PACKAGES="golang-go git php5-memcached php5-intl php5-mysql php5-redis php5-gd php5-memcache php5-xdebug"
 ENV PHPUNIT_URL="https://phar.phpunit.de/phpunit-5.phar"
 ENV GLOBAL_PATH=/usr/local/bin
 
@@ -12,8 +12,9 @@ ENV USERNAME=$username
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install selected extensions and other stuff
-RUN apt-get update \
-    && apt-get -y --no-install-recommends install $PACKAGES \
+# apt-get update could be slow, so i separate in specific cachable
+RUN apt-get update
+RUN apt-get -y --no-install-recommends install $PACKAGES \
     && apt-get clean; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 
 # Configure
