@@ -37,12 +37,15 @@ services:
     volumes:
       - ${HOST_APP_PATH}:/var/www/html:delegated
       - /private:/private #/tmp dir for mac
-      - /tmp:/tmp
       - ./data/log:/var/log/php-fpm
       - ./data/log/xdebug:/var/log/xdebug
       - ./data/composer:/home/${USERNAME}/.composer
     networks:
       - mynetwork
+    environment:
+      - WP_CORE_DIR=/var/www/html
+      - WP_TESTS_DIR=/var/www/html/tests
+      - PHP_IDE_CONFIG="serverName=Docker"
 
   mysql:
     image: mysql:5.7
