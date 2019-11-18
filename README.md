@@ -1,13 +1,11 @@
 # Nginx Latest + PHP (5.6, 7.3) + MySql 5.7 + MailHog + Redis with Redismin + PHPCS
 You need to set all environment variables to use these contianers:  
 - **APPLICATION** should be _wordpress_ or _magento_. Load pre-defined nginx config files;
-- **PHP_VERSION** should be _5.6_ or _7.3_;
+- **PHP_VERSION** should be _5.6_, _7.2_ or _7.3_;
 - **DOMAIN** should be your local domain;
 - **USERNAME** is your local username to use in nginx and php-fpm for file permissions; 
 - **HOST_APP_PATH** is the path of app in your machine. Usually is _../_ to place docker folder inside the project folder;
 - **DOCKER_DATA_FOLDER** is the path to save persistent docker data;
-- **DB_NAME** is the default schema name for this application. It's created when the database container is created;
-- **DB_USER** is the user for the DB;
 - **DB_PASSWORD** is the password for the above user for DB;
 - **REDISMIN_KEY** is the key provided by redismin to connect to GUI. See more below;
 
@@ -44,7 +42,17 @@ This plugin also installs N98. You can run it from anywhere with the command _n9
 Use este https://kifarunix.com/how-to-create-self-signed-ssl-certificate-with-mkcert-on-ubuntu-18-04/ para criar e confiar em um certificado auto-assinado.
 
 ## HELPERS
-There are some helper scripts in ./helpers. These scripts uses .env vars.
+There are some helper files in ./helpers. These scripts uses .env vars.
 - ./helpers/magento2
   - download.sh: download magento from composer to /var/www/html from container;
   - install.sh: install magento using brazilian config and some pre-defined options. Need to have used download.sh or manually downloaded magento 2;
+- ./helpers/magento
+  - install-n98.sh: install n98-magerun and make runnable ate any lpace only with "n98" command
+- ./helpers/wordpress
+  - install-wp-phpcs-standard.sh: installs wordpress PHPCS standard and put it into phpcs config
+  - install-wpcli.sh: installs wpcli and make it runnabble at any place with "wp" command
+- ./helpers/phpunit
+  - PHP Unit phar's for inclusion in IDE to make it auto complete
+  
+## BASE IMAGES
+_base_images_ folder contain PHP base images that are pushed to dockerhub and used to create containers.
