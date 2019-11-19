@@ -30,6 +30,7 @@ services:
       dockerfile: Dockerfile-${PHP_VERSION}
       args:
         username: ${USERNAME}
+        host_os: ${HOST_OS}
     container_name: ${APPLICATION}_php
     links:
       - mysql

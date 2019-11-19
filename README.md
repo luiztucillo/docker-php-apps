@@ -8,6 +8,7 @@ You need to set all environment variables to use these contianers:
 - **DOCKER_DATA_FOLDER** is the path to save persistent docker data;
 - **DB_PASSWORD** is the password for the above user for DB;
 - **REDISMIN_KEY** is the key provided by redismin to connect to GUI. See more below;
+- **HOST_OS** should be _macos_ or _linux_. It's used to define xdebug config. (if using windows, define as _macos_ as docker host works in windows like in mac __=)__)
 
 Create .env file in docker root using templates from _env-templates_ folder. So you can override it with than get back to its original. Ex.:
 To run __wordpress__ execute: _cp env-templates/wordpress.env ../.env && docker-compose up -d --build_  
