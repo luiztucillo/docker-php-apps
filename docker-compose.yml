@@ -33,14 +33,14 @@ services:
         host_os: ${HOST_OS}
     container_name: ${APPLICATION}_php
     links:
-      - mysql
+      - db
       - redis
     volumes:
-      - ${HOST_APP_PATH}:/var/www/html:delegated
-      - /private:/private #/tmp dir for mac
-      - ./data/log:/var/log/php-fpm
-      - ./data/log/xdebug:/var/log/xdebug
-      - ./data/composer:/home/${USERNAME}/.composer
+      - ${HOST_APP_PATH}:/var/www/html:cached
+      - /private:/private:delegated #/tmp dir for mac
+      - ./data/log:/var/log/php-fpm:delegated
+      - ./data/log/xdebug:/var/log/xdebug:delegated
+      - ./data/composer:/home/${USERNAME}/.composer:delegated
     networks:
       - mynetwork
     environment:
@@ -48,9 +48,10 @@ services:
       - WP_TESTS_DIR=/var/www/html/tests
       - PHP_IDE_CONFIG="serverName=Docker"
 
-  mysql:
-    image: mysql:5.7
-    container_name: ${APPLICATION}_mysql
+  db:
+    image: mariadb
+    restart: always
+    container_name: ${APPLICATION}_db
     ports:
       - 3306:3306
     environment:
