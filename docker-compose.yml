@@ -33,7 +33,7 @@ services:
         host_os: ${HOST_OS}
     container_name: ${APPLICATION}_php
     links:
-      - db
+      - mysql
       - redis
     volumes:
       - ${HOST_APP_PATH}:/var/www/html:cached
@@ -48,10 +48,10 @@ services:
       - WP_TESTS_DIR=/var/www/html/tests
       - PHP_IDE_CONFIG="serverName=Docker"
 
-  db:
-    image: mariadb
+  mysql:
+    image: mysql:5.7
     restart: always
-    container_name: ${APPLICATION}_db
+    container_name: ${APPLICATION}_mysql
     ports:
       - 3306:3306
     environment:
