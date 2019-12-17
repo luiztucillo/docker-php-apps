@@ -31,6 +31,7 @@ RUN cd /tmp \
 
 ##COMPOSER
 # Base image already have composer
+RUN composer global require -vvv hirak/prestissimo
 
 #Install and configure PHPCS
 RUN curl -L https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar -o $GLOBAL_PATH/phpcs \
