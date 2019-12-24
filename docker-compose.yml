@@ -52,11 +52,24 @@ services:
     image: bitnine/agensgraph:v2.1.1
     container_name: ${APPLICATION}_agensgraph
     command: tail -F /dev/null
-    tty: true
     volumes:
-      - ${DOCKER_DATA_FOLDER}/agendsgraph:/home/agens/AgensGraph/shareddata
+      - agensgraph:/home/agens/AgensGraph/data
     ports:
       - 5432:5432
+    networks:
+      - mynetwork
+
+  agensbrowser:
+    build:
+      context: images/agensbrowser
+    container_name: ${APPLICATION}_agensbrowser
+    command: tail -F /dev/nul
+    depends_on:
+      - agensgraph
+    volumes:
+      - ./images/agensbrowser/agens-browser.config.yml:/home/agens/AgensBrowser/agens-browser.config.yml
+    ports:
+      - 8085:8085
     networks:
       - mynetwork
 
@@ -89,3 +102,6 @@ services:
 networks:
   mynetwork:
     driver: bridge
+
+volumes:
+  agensgraph:
