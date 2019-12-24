@@ -1,7 +1,7 @@
 FROM phpdockerio/php73-fpm:latest
 
 ENV PHP_CONFIG_PATH=/etc/php/7.3
-ENV PACKAGES="vim golang-go git subversion mysql-client php-memcached php7.3-mysql php7.3-intl php-redis php-xdebug php7.3-bcmath php7.3-gd php7.3-soap"
+ENV PACKAGES="vim golang-go git subversion mysql-client php-memcached php7.3-mysql php7.3-pgsql php7.3-intl php-redis php-xdebug php7.3-bcmath php7.3-gd php7.3-soap"
 ENV PHPUNIT_URL="https://phar.phpunit.de/phpunit-8.phar"
 ENV GLOBAL_PATH=/usr/local/bin
 

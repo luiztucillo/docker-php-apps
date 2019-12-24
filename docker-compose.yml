@@ -33,8 +33,8 @@ services:
         host_os: ${HOST_OS}
     container_name: ${APPLICATION}_php
     links:
-      - mysql
       - redis
+      - agensgraph
     volumes:
       - ${HOST_APP_PATH}:/var/www/html:cached
       - /private:/private:delegated #/tmp dir for mac
@@ -48,16 +48,15 @@ services:
       - WP_TESTS_DIR=/var/www/html/tests
       - PHP_IDE_CONFIG="serverName=Docker"
 
-  mysql:
-    image: mysql:5.7
-    restart: always
-    container_name: ${APPLICATION}_mysql
-    ports:
-      - 3306:3306
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+  agensgraph:
+    image: bitnine/agensgraph:v2.1.1
+    container_name: ${APPLICATION}_agensgraph
+    command: tail -F /dev/null
+    tty: true
     volumes:
-      - ${DOCKER_DATA_FOLDER}/mysql57:/var/lib/mysql
+      - ${DOCKER_DATA_FOLDER}/agendsgraph:/home/agens/AgensGraph/shareddata
+    ports:
+      - 5432:5432
     networks:
       - mynetwork
 
