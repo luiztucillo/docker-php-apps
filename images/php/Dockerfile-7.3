@@ -17,7 +17,6 @@ RUN echo "user = $USERNAME" >> $PHP_CONFIG_PATH/fpm/php-fpm.conf \
     && echo "group = $USERNAME" >> $PHP_CONFIG_PATH/fpm/php-fpm.conf
 
 RUN mkdir /home/$USERNAME/.composer \
-    && cp -r /root/.composer/* /home/$USERNAME/.composer/ \
     && chown -R $USERNAME:$USERNAME /home/$USERNAME/.composer
 
 # Make sure the volume mount point is empty
