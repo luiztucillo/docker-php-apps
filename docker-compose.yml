@@ -14,7 +14,7 @@ services:
       - php
     volumes:
       - ${HOST_APP_PATH}:/var/www/html:delegated
-      - ./data/log:/var/log/nginx
+      - ./data/log:/var/log/nginx:delegated
       - ./images/nginx/conf/ssl/:/etc/nginx/ssl/
       - ./images/nginx/conf/conf.d/default.conf:/etc/nginx/conf.d/default.conf
       - ./images/nginx/conf/applications/${APPLICATION}.conf:/etc/nginx/application.conf
@@ -58,7 +58,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - ${DOCKER_DATA_FOLDER}/mysql57:/var/lib/mysql
+      - ${DOCKER_DATA_FOLDER}/mysql57:/var/lib/mysql:delegated
     networks:
       - mynetwork
 
