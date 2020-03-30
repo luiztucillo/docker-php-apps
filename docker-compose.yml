@@ -36,7 +36,7 @@ services:
       - mysql
       - redis
     volumes:
-      - ${HOST_APP_PATH}:/var/www/html:cached
+      - ${HOST_APP_PATH}:/var/www/html:delegated
       - /private:/private:delegated #/tmp dir for mac
       - ./data/log:/var/log/php-fpm:delegated
       - ./data/log/xdebug:/var/log/xdebug:delegated
