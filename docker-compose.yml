@@ -40,8 +40,9 @@ services:
       - /private:/private:delegated #/tmp dir for mac
       - ./data/log:/var/log/php-fpm:delegated
       - ./data/log/xdebug:/var/log/xdebug:delegated
-      - ./data/composer/auth.json:/home/${USERNAME}/.composer/auth.json:delegated
-      - ./data/composer/cache:/home/${USERNAME}/.composer/cache:delegated
+      - ./data/composer/auth.json:/home/${USERNAME}/.composer/auth.json:cached
+      - ./data/composer/cache:/home/${USERNAME}/.composer/cache:cached
+      - ./data/root/composer/cache:/root/.composer:cached
     networks:
       - mynetwork
     environment:
