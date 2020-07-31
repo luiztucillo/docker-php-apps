@@ -89,6 +89,21 @@ services:
     networks:
       - mynetwork
 
+  neo4j:
+    image: neo4j:latest
+    container_name: ${APPLICATION}_neo4j
+    ports:
+      - 7474:7474
+      - 7473:7473
+      - 7687:7687
+    environment:
+      NEO4J_AUTH: neo4j/1234qwer
+    volumes:
+      - ${DOCKER_DATA_FOLDER}/neo4j/data:/data
+      - ${DOCKER_DATA_FOLDER}/neo4j/logs:/logs
+      - ${DOCKER_DATA_FOLDER}/neo4j/import:/var/lib/neo4j/import
+      - ${DOCKER_DATA_FOLDER}/neo4j/plugins:/plugins
+
 networks:
   mynetwork:
     driver: bridge
