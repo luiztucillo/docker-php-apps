@@ -35,6 +35,7 @@ services:
     links:
       - mysql
       - redis
+      - neo4j
     volumes:
       - ${HOST_APP_PATH}:/var/www/html:delegated
       - /private:/private:delegated #/tmp dir for mac
@@ -103,6 +104,8 @@ services:
       - ${DOCKER_DATA_FOLDER}/neo4j/logs:/logs
       - ${DOCKER_DATA_FOLDER}/neo4j/import:/var/lib/neo4j/import
       - ${DOCKER_DATA_FOLDER}/neo4j/plugins:/plugins
+    networks:
+      - mynetwork
 
 networks:
   mynetwork:
