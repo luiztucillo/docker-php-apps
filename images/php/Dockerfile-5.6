@@ -19,6 +19,8 @@ RUN echo "user = $USERNAME" >> $PHP_CONFIG_PATH/fpm/php-fpm.conf \
 RUN mkdir /home/$USERNAME/.composer \
     && chown -R $USERNAME:$USERNAME /home/$USERNAME/.composer
 
+RUN composer self-update --preview
+
 # Make sure the volume mount point is empty
 USER $USERNAME
 RUN rm -rf /var/www/html/*
