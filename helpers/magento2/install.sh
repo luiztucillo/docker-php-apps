@@ -22,4 +22,20 @@ docker container exec -it ${APPLICATION}_php composer update -vvv && \
     --language=pt_BR \
     --currency=BRL \
     --timezone=America/Sao_Paulo \
-    --use-rewrites=1
+    --use-rewrites=1 \
+    --elasticsearch-port=9200 \
+    --elasticsearch-host=elastic \
+    --search-engine=elasticsearch7
+
+docker container exec -it --workdir /var/www/html ${APPLICATION}_php php /var/www/html/bin/magento setup:config:set \
+    --session-save=redis \
+    --session-save-redis-host=redis \
+    --session-save-redis-port=6379 \
+    --session-save-redis-log-level=4 \
+    --session-save-redis-db=2
+
+docker container exec -it --workdir /var/www/html ${APPLICATION}_php php /var/www/html/bin/magento setup:config:set \
+    --page-cache=redis \
+    --page-cache-redis-port=6379 \
+    --page-cache-redis-server=redis \
+    --page-cache-redis-db=1

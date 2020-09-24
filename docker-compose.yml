@@ -1,112 +1,130 @@
 version: '2'
 services:
-  nginx:
-    build:
-      context: images/nginx
-      args:
-        username: ${USERNAME}
-        domain: ${DOMAIN}
-    container_name: ${APPLICATION}_nginx
-    ports:
-      - 80:80
-      - 443:443
-    links:
-      - php
-    volumes:
-      - ${HOST_APP_PATH}:/var/www/html:delegated
-      - ./data/log:/var/log/nginx:delegated
-      - ./images/nginx/conf/ssl/:/etc/nginx/ssl/
-      - ./images/nginx/conf/conf.d/default.conf:/etc/nginx/conf.d/default.conf
-      - ./images/nginx/conf/applications/${APPLICATION}.conf:/etc/nginx/application.conf
-      - ./images/nginx/conf/includes:/etc/nginx/includes
-    networks:
-      mynetwork:
-        aliases:
-          - ${DOMAIN}
+    nginx:
+        build:
+            context: images/nginx
+            args:
+                username: ${USERNAME}
+                domain: ${DOMAIN}
+        container_name: ${APPLICATION}_nginx
+        ports:
+            - 80:80
+            - 443:443
+        links:
+            - php
+        volumes:
+            - ${HOST_APP_PATH}:/var/www/html:delegated
+            - ./data/log:/var/log/nginx:delegated
+            - ./images/nginx/conf/ssl/:/etc/nginx/ssl/
+            - ./images/nginx/conf/conf.d/default.conf:/etc/nginx/conf.d/default.conf
+            - ./images/nginx/conf/applications/${APPLICATION}.conf:/etc/nginx/application.conf
+            - ./images/nginx/conf/includes:/etc/nginx/includes
+        networks:
+            mynetwork:
+                aliases:
+                    - ${DOMAIN}
 
-  php:
-    build:
-      context: images/php
-      dockerfile: Dockerfile-${PHP_VERSION}
-      args:
-        username: ${USERNAME}
-        host_os: ${HOST_OS}
-    container_name: ${APPLICATION}_php
-    links:
-      - mysql
-      - redis
-      - neo4j
-    volumes:
-      - ${HOST_APP_PATH}:/var/www/html:delegated
-      - /private:/private:delegated #/tmp dir for mac
-      - ./data/log:/var/log/php-fpm:delegated
-      - ./data/log/xdebug:/var/log/xdebug:delegated
-      - ./data/composer/auth.json:/home/${USERNAME}/.composer/auth.json:cached
-      - ./data/composer/cache:/home/${USERNAME}/.composer/cache:cached
-      - ./data/root/composer/cache:/root/.composer:cached
-    networks:
-      - mynetwork
-    environment:
-      - WP_CORE_DIR=/var/www/html
-      - WP_TESTS_DIR=/var/www/html/tests
-      - PHP_IDE_CONFIG="serverName=Docker"
+    php:
+        build:
+            context: images/php
+            dockerfile: Dockerfile-${PHP_VERSION}
+            args:
+                username: ${USERNAME}
+                host_os: ${HOST_OS}
+        container_name: ${APPLICATION}_php
+        links:
+            - mysql
+            - redis
+            - neo4j
+            - elastic
+        volumes:
+            - ${HOST_APP_PATH}:/var/www/html
+            - /private:/private #/tmp dir for mac
+            - ./data/log:/var/log/php-fpm
+            - ./data/log/xdebug:/var/log/xdebug
+            - ${DOCKER_DATA_FOLDER}/composer/auth.json:/home/${USERNAME}/.composer/auth.json
+            - ./data/composer/cache:/home/${USERNAME}/.composer/cache
+            - ./data/root/composer/cache:/root/.composer
+        networks:
+            - mynetwork
+        environment:
+            - WP_CORE_DIR=/var/www/html
+            - WP_TESTS_DIR=/var/www/html/tests
+            - PHP_IDE_CONFIG="serverName=Docker"
 
-  mysql:
-    image: mysql:5.7
-    restart: always
-    container_name: ${APPLICATION}_mysql
-    ports:
-      - 3306:3306
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - ${DOCKER_DATA_FOLDER}/mysql57:/var/lib/mysql:delegated
-    networks:
-      - mynetwork
+    mysql:
+        image: mysql:5.7
+        restart: always
+        container_name: ${APPLICATION}_mysql
+        ports:
+            - 3306:3306
+        environment:
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+        volumes:
+            - ${DOCKER_DATA_FOLDER}/mysql57:/var/lib/mysql:delegated
+        networks:
+            - mynetwork
 
-  mailhog:
-    image: mailhog/mailhog
-    container_name: ${APPLICATION}_mailhog
-    ports:
-      - 1025:1025
-      - 8025:8025
-    networks:
-      - mynetwork
+    mailhog:
+        image: mailhog/mailhog
+        container_name: ${APPLICATION}_mailhog
+        ports:
+            - 1025:1025
+            - 8025:8025
+        networks:
+            - mynetwork
 
-  redis:
-    image: redis:4.0
-    container_name: ${APPLICATION}_redis
-    ports:
-      - 6379:6379
-    networks:
-      - mynetwork
+    redis:
+        image: redis:4.0
+        container_name: ${APPLICATION}_redis
+        ports:
+            - 6379:6379
+        networks:
+            - mynetwork
 
-  redismin:
-    image: redsmin/proxy
-    container_name: ${APPLICATION}_redismin
-    environment:
-      REDSMIN_KEY: ${REDISMIN_KEY}
-      REDIS_URI: redis://redis:6379
-    networks:
-      - mynetwork
+    redismin:
+        image: redsmin/proxy
+        container_name: ${APPLICATION}_redismin
+        environment:
+            REDSMIN_KEY: ${REDISMIN_KEY}
+            REDIS_URI: redis://redis:6379
+        networks:
+            - mynetwork
 
-  neo4j:
-    image: neo4j:3.5
-    container_name: ${APPLICATION}_neo4j
-    ports:
-      - 7474:7474
-      - 7473:7473
-      - 7687:7687
-    environment:
-      NEO4J_AUTH: neo4j/1234qwer
-    volumes:
-      - ${DOCKER_DATA_FOLDER}/neo4j/data:/data
-      - ${DOCKER_DATA_FOLDER}/neo4j/logs:/logs
-      - ${DOCKER_DATA_FOLDER}/neo4j/import:/var/lib/neo4j/import
-      - ${DOCKER_DATA_FOLDER}/neo4j/plugins:/plugins
-    networks:
-      - mynetwork
+    neo4j:
+        image: neo4j:3.5
+        container_name: ${APPLICATION}_neo4j
+        ports:
+            - 7474:7474
+            - 7473:7473
+            - 7687:7687
+        environment:
+            NEO4J_AUTH: neo4j/1234qwer
+        volumes:
+            - ${DOCKER_DATA_FOLDER}/neo4j/data:/data
+            - ${DOCKER_DATA_FOLDER}/neo4j/logs:/logs
+            - ${DOCKER_DATA_FOLDER}/neo4j/import:/var/lib/neo4j/import
+            - ${DOCKER_DATA_FOLDER}/neo4j/plugins:/plugins
+        networks:
+            - mynetwork
+
+
+    elastic:
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
+        container_name: ${APPLICATION}_es1
+        environment:
+            - discovery.type=single-node
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        volumes:
+            - ${DOCKER_DATA_FOLDER}/elastic/data01:/usr/share/elasticsearch/data
+        ports:
+            - 9200:9200
+        networks:
+            - mynetwork
 
 networks:
-  mynetwork:
-    driver: bridge
+    mynetwork:
+        driver: bridge

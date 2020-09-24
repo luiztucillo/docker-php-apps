@@ -4,6 +4,9 @@
 DIR=$(dirname $0)
 APPLICATION=$(grep APPLICATION ${DIR}/../../.env | cut -d '=' -f2)
 
+docker container exec -u0 --workdir /var/www/html ${APPLICATION}_php \
+       composer self-update
+
 docker container exec --workdir /var/www/html ${APPLICATION}_php \
        composer create-project -vvv --repository-url=https://repo.magento.com/ magento/project-community-edition /var/www/html/tmp
 
