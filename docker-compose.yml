@@ -13,8 +13,8 @@ services:
         links:
             - php
         volumes:
-            - wordpress-app:/var/www/html
-            - ../plugins:/var/www/html/wp-content/plugins
+            - ./src:/var/www/html
+            - ./plugins:/var/www/html/wp-content/plugins
             - ./images/nginx/conf/ssl/:/etc/nginx/ssl/
             - ./images/nginx/conf/conf.d/default.conf:/etc/nginx/conf.d/default.conf
             - ./images/nginx/conf/applications/wordpress.conf:/etc/nginx/application.conf
@@ -35,8 +35,8 @@ services:
         links:
             - mysql
         volumes:
-          - wordpress-app:/var/www/html
-          - ../plugins:/var/www/html/wp-content/plugins
+          - ./src:/var/www/html
+          - ./plugins:/var/www/html/wp-content/plugins
           - /private:/private #/tmp dir for mac
         networks:
             - mynetwork
@@ -53,7 +53,7 @@ services:
         environment:
             MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
         volumes:
-          - wordpress-db:/var/lib/mysql:delegated
+          - ./data:/var/lib/mysql:delegated
         networks:
             - mynetwork
 
@@ -69,7 +69,3 @@ services:
 networks:
     mynetwork:
         driver: bridge
-
-volumes:
-  wordpress-app:
-  wordpress-db:
