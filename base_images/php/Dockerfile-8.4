@@ -1,0 +1,41 @@
+FROM phpdockerio/php:8.4-fpm
+
+ENV PHP_CONFIG_PATH=/etc/php/8.4
+ENV PACKAGES="vim golang-go git subversion mysql-client php-memcached php8.4-mysql php8.4-intl php-redis php-xdebug php8.4-bcmath php8.4-gd php8.4-soap"
+ENV PHPUNIT_URL="https://phar.phpunit.de/phpunit-10.phar"
+ENV GLOBAL_PATH=/usr/local/bin
+
+# Fix debconf warnings upon build
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Install selected extensions and other stuff
+# apt-get update could be slow, so i separate in specific cachable
+RUN apt-get update
+RUN apt-get -y --no-install-recommends install $PACKAGES \
+    && apt-get clean; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+
+# Configure
+COPY conf/php.ini $PHP_CONFIG_PATH/fpm/
+COPY conf/php.ini $PHP_CONFIG_PATH/cli/
+COPY conf/php-fpm-8.4.conf $PHP_CONFIG_PATH/fpm/
+
+RUN mkdir -p /var/www/html
+
+### Install sendmail for use with mailhog
+ENV GOPATH /tmp
+RUN cd /tmp \
+    && go install github.com/mailhog/mhsendmail@v0.2.0 \
+    && cp /tmp/bin/mhsendmail /usr/local/bin
+
+#Install and configure PHPCS
+RUN curl -L https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar -o $GLOBAL_PATH/phpcs \
+    && chmod +x $GLOBAL_PATH/phpcs
+
+#Install PHPUnit
+RUN curl -L $PHPUNIT_URL -o $GLOBAL_PATH/phpunit.phar \
+    && chmod +x $GLOBAL_PATH/phpunit.phar \
+    && ln -sf $GLOBAL_PATH/phpunit.phar $GLOBAL_PATH/phpunit
+
+# Make sure the volume mount point is empty
+RUN rm -rf /var/www/html/*
+WORKDIR /var/www/html
