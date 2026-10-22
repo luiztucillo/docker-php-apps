@@ -1,37 +1,56 @@
-FROM phpdockerio/php56-fpm:latest
+FROM ubuntu:noble
 
-ENV PHP_CONFIG_PATH=/etc/php5
-ENV PACKAGES="vim golang-go git subversion mysql-client php5-memcached php5-intl php5-mysql php5-redis php5-gd php5-memcache php5-xdebug"
+ENV PHP_VERSION=5.6
+# First Ondřej Surý PPA revision with the fix for CVE-2026-109618 / CVE-2026-109619
+ENV PHP_MIN_REVISION=5.6.40-104
+ENV PHP_CONFIG_PATH=/etc/php/5.6
+ENV PACKAGES="vim golang-go git subversion mysql-client php5.6-memcached php5.6-mysql php5.6-intl php5.6-redis php5.6-xdebug php5.6-gd php5.6-memcache"
 ENV PHPUNIT_URL="https://phar.phpunit.de/phpunit-5.phar"
 ENV GLOBAL_PATH=/usr/local/bin
 
 # Fix debconf warnings upon build
 ARG DEBIAN_FRONTEND=noninteractive
 
-# Install selected extensions and other stuff
-# apt-get update could be slow, so i separate in specific cachable
-RUN apt-get update
-RUN apt-get -y --no-install-recommends install $PACKAGES \
+# phpdockerio/php56-fpm is frozen since 2020 on an Ubuntu release that no longer gets PHP security updates.
+# Install PHP from Ondřej Surý's PPA on Ubuntu 24.04, same source used by phpdockerio/php:8.x-fpm.
+RUN apt-get update \
+    && apt-get -y --no-install-recommends install ca-certificates curl gnupg unzip \
+    && mkdir -p /etc/apt/keyrings \
+    && curl -fsSL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x14AA40EC0831756756D7F66C4F4EA0AAE5267A6C" \
+        | gpg --dearmor -o /etc/apt/keyrings/ondrej-php.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/ondrej-php.gpg] https://ppa.launchpadcontent.net/ondrej/php/ubuntu noble main" \
+        > /etc/apt/sources.list.d/ondrej-php.list \
+    && apt-get update \
+    && apt-get -y --no-install-recommends install \
+        php${PHP_VERSION}-fpm php${PHP_VERSION}-cli php${PHP_VERSION}-apcu php${PHP_VERSION}-curl \
+        php${PHP_VERSION}-mbstring php${PHP_VERSION}-opcache php${PHP_VERSION}-readline \
+        php${PHP_VERSION}-xml php${PHP_VERSION}-zip \
+        $PACKAGES \
+    && ln -s /usr/sbin/php-fpm${PHP_VERSION} /usr/sbin/php-fpm \
     && apt-get clean; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+
+# Fail the build if apt resolved a PHP revision without the security fix
+RUN for p in php${PHP_VERSION}-fpm php${PHP_VERSION}-cli; do \
+        v="$(dpkg-query -W -f='${Version}' $p)"; \
+        dpkg --compare-versions "$v" ge "$PHP_MIN_REVISION" \
+            || { echo "$p $v is older than $PHP_MIN_REVISION" >&2; exit 1; }; \
+    done
+
+# Composer 2.2 LTS is the last line supporting PHP < 7.2.5
+COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
 
 # Configure
 COPY conf/php.ini $PHP_CONFIG_PATH/fpm/
 COPY conf/php.ini $PHP_CONFIG_PATH/cli/
 COPY conf/php-fpm.conf $PHP_CONFIG_PATH/fpm/
 
-RUN mkdir -p /var/www/html
+RUN mkdir -p /var/www/html /var/log/php-fpm
 
 ### Install sendmail for use with mailhog
 ENV GOPATH /tmp
 RUN cd /tmp \
-    && go get github.com/mailhog/mhsendmail \
-    && cd /tmp/src/github.com/mailhog/mhsendmail/ \
-    && go build \
-    && cp /tmp/src/github.com/mailhog/mhsendmail/mhsendmail /usr/local/bin
-
-##COMPOSER
-# Base image already have composer
-RUN composer global require -vvv hirak/prestissimo
+    && go install github.com/mailhog/mhsendmail@v0.2.0 \
+    && cp /tmp/bin/mhsendmail /usr/local/bin
 
 #Install and configure PHPCS
 RUN curl -L https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar -o $GLOBAL_PATH/phpcs \
@@ -42,6 +61,10 @@ RUN curl -L $PHPUNIT_URL -o $GLOBAL_PATH/phpunit.phar \
     && chmod +x $GLOBAL_PATH/phpunit.phar \
     && ln -sf $GLOBAL_PATH/phpunit.phar $GLOBAL_PATH/phpunit
 
-RUN mkdir -p /var/www/html
+# Make sure the volume mount point is empty
 RUN rm -rf /var/www/html/*
 WORKDIR /var/www/html
+
+EXPOSE 9000
+STOPSIGNAL SIGQUIT
+CMD ["/usr/sbin/php-fpm"]
