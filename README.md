@@ -57,3 +57,9 @@ There are some helper files in ./helpers. These scripts uses .env vars.
   
 ## BASE IMAGES
 _base_images_ folder contain PHP base images that are pushed to dockerhub and used to create containers.
+They are built and pushed by the _Base images_ GitHub Actions workflow (`.github/workflows/base-images.yml`) for `linux/amd64` and `linux/arm64`:
+- pull requests touching _base_images_ only build and smoke test the images;
+- pushes to _master_ publish `luiztucillo/phpXX:latest` and a dated `YYYYMMDD-<sha>` tag;
+- a weekly rebuild without cache picks up new PHP security releases.
+
+To get updated base images locally, rebuild with _docker-compose build --pull php_.
