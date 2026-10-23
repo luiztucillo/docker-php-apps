@@ -1,7 +1,7 @@
-# Nginx Latest + PHP (5.6, 7.3) + MySql 5.7 + MailHog + Redis with Redismin + PHPCS
+# Nginx Latest + PHP (5.6, 7.2, 7.3, 7.4, 8.1 to 8.5) + MySql 5.7 + MailHog + Redis with Redismin + PHPCS
 You need to set all environment variables to use these contianers:  
 - **APPLICATION** should be _wordpress_ or _magento_. Load pre-defined nginx config files;
-- **PHP_VERSION** should be _5.6_, _7.2_ or _7.3_;
+- **PHP_VERSION** should be _5.6_, _7.2_, _7.3_, _7.4_, _8.1_, _8.2_, _8.3_, _8.4_ or _8.5_;
 - **DOMAIN** should be your local domain;
 - **USERNAME** is your local username to use in nginx and php-fpm for file permissions; 
 - **HOST_APP_PATH** is the path of app in your machine. Usually is _../_ to place docker folder inside the project folder;

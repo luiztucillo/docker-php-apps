@@ -1,7 +1,10 @@
 FROM phpdockerio/php:8.3-fpm
 
+ENV PHP_VERSION=8.3
+# First Ondřej Surý PPA revision with the fix for CVE-2026-109618 / CVE-2026-109619
+ENV PHP_MIN_REVISION=8.3.36
 ENV PHP_CONFIG_PATH=/etc/php/8.3
-ENV PACKAGES="vim golang-go git subversion mysql-client php-memcached php8.3-mysql php8.3-intl php-redis php-xdebug php8.3-bcmath php8.3-gd php8.3-soap"
+ENV PACKAGES="vim golang-go git subversion mysql-client php8.3-memcached php8.3-mysql php8.3-intl php8.3-redis php8.3-xdebug php8.3-bcmath php8.3-gd php8.3-soap"
 ENV PHPUNIT_URL="https://phar.phpunit.de/phpunit-10.phar"
 ENV GLOBAL_PATH=/usr/local/bin
 
@@ -9,10 +12,18 @@ ENV GLOBAL_PATH=/usr/local/bin
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install selected extensions and other stuff
-# apt-get update could be slow, so i separate in specific cachable
-RUN apt-get update
-RUN apt-get -y --no-install-recommends install $PACKAGES \
+# update and install share a layer so a cached package index never pins an old PHP;
+# fpm and cli are listed so apt upgrades them even if the base image is stale
+RUN apt-get update \
+    && apt-get -y --no-install-recommends install php${PHP_VERSION}-fpm php${PHP_VERSION}-cli $PACKAGES \
     && apt-get clean; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+
+# Fail the build if apt resolved a PHP revision without the security fix
+RUN for p in php${PHP_VERSION}-fpm php${PHP_VERSION}-cli; do \
+        v="$(dpkg-query -W -f='${Version}' $p)"; \
+        dpkg --compare-versions "$v" ge "$PHP_MIN_REVISION" \
+            || { echo "$p $v is older than $PHP_MIN_REVISION" >&2; exit 1; }; \
+    done
 
 # Configure
 COPY conf/php.ini $PHP_CONFIG_PATH/fpm/
