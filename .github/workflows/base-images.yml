@@ -1,0 +1,162 @@
+name: Base images
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - base_images/**
+      - .github/workflows/base-images.yml
+  pull_request:
+    branches: [master]
+    paths:
+      - base_images/**
+      - .github/workflows/base-images.yml
+  # Weekly rebuild without cache so the images pick up new PPA security releases
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NAMESPACE: luiztucillo
+  # Only master publishes; pull requests just build and smoke test
+  PUBLISH: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/master' }}
+
+jobs:
+  build:
+    name: php${{ matrix.php }} ${{ matrix.platform }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ["5.6", "7.2", "7.3", "7.4", "8.1", "8.2", "8.3", "8.4", "8.5"]
+        platform: [linux/amd64, linux/arm64]
+        include:
+          # Native runners for each arch, no QEMU emulation
+          - platform: linux/amd64
+            runner: ubuntu-24.04
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - name: Prepare
+        env:
+          PHP: ${{ matrix.php }}
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          echo "IMAGE=${NAMESPACE}/php${PHP//./}" >> "$GITHUB_ENV"
+          echo "PLATFORM_PAIR=${PLATFORM//\//-}" >> "$GITHUB_ENV"
+
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Login to Docker Hub
+        if: env.PUBLISH == 'true'
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build for smoke test
+        if: env.PUBLISH != 'true'
+        uses: docker/build-push-action@v7
+        with:
+          context: base_images/php
+          file: base_images/php/Dockerfile-${{ matrix.php }}
+          platforms: ${{ matrix.platform }}
+          pull: true
+          load: true
+          tags: ${{ env.IMAGE }}:ci
+          cache-from: type=gha,scope=php${{ matrix.php }}-${{ env.PLATFORM_PAIR }}
+
+      - name: Smoke test
+        if: env.PUBLISH != 'true'
+        run: docker run --rm "$IMAGE:ci" sh -c 'php -v && php -m && composer --version'
+
+      - name: Build and push by digest
+        id: build
+        if: env.PUBLISH == 'true'
+        uses: docker/build-push-action@v7
+        with:
+          context: base_images/php
+          file: base_images/php/Dockerfile-${{ matrix.php }}
+          platforms: ${{ matrix.platform }}
+          pull: true
+          no-cache: ${{ github.event_name == 'schedule' }}
+          outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha,scope=php${{ matrix.php }}-${{ env.PLATFORM_PAIR }}
+          cache-to: type=gha,mode=max,scope=php${{ matrix.php }}-${{ env.PLATFORM_PAIR }}
+
+      - name: Export digest
+        if: env.PUBLISH == 'true'
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/digests"
+          touch "$RUNNER_TEMP/digests/${DIGEST#sha256:}"
+
+      - name: Upload digest
+        if: env.PUBLISH == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: digests-php${{ matrix.php }}-${{ env.PLATFORM_PAIR }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  # Joins the per-arch digests of each PHP version into one multi-arch tag
+  merge:
+    name: php${{ matrix.php }} manifest
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ["5.6", "7.2", "7.3", "7.4", "8.1", "8.2", "8.3", "8.4", "8.5"]
+    steps:
+      - name: Prepare
+        env:
+          PHP: ${{ matrix.php }}
+        run: echo "IMAGE=${NAMESPACE}/php${PHP//./}" >> "$GITHUB_ENV"
+
+      - name: Download digests
+        uses: actions/download-artifact@v8
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: digests-php${{ matrix.php }}-*
+          merge-multiple: true
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.IMAGE }}
+          # latest keeps images/php/Dockerfile-* working; the dated tag allows pinning and rollback
+          tags: |
+            type=raw,value=latest
+            type=raw,value={{date 'YYYYMMDD'}}-{{sha}}
+
+      - name: Create manifest list and push
+        working-directory: ${{ runner.temp }}/digests
+        run: |
+          docker buildx imagetools create \
+            $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf "$IMAGE@sha256:%s " *)
+
+      - name: Inspect image
+        run: docker buildx imagetools inspect "$IMAGE:latest"
